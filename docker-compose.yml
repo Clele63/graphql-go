@@ -12,6 +12,7 @@ services:
       - "6000:6000"
     environment:
       - APP_ENV=prod
+      - PORT=6000
       - BBOLT_PATH=/data/app.db
     volumes:
       - bbolt_data:/data

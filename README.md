@@ -29,7 +29,7 @@ http://localhost:6000/query
 et un **GraphQL Playground** est disponible sur :
 
 ```
-http://localhost:6000/
+http://localhost:6000/playground
 ```
 
 ---
