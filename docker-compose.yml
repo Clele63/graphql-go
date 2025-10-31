@@ -1,0 +1,21 @@
+services:
+  graphql-go-app:
+    container_name: GraphqlGoApp
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+       - NODE_VERSION="20"
+       - GO_VERSION="1.25"
+       - ALPINE_BUILD_VERSION="3.20"
+    ports:
+      - "6000:6000"
+    environment:
+      - APP_ENV=prod
+      - BBOLT_PATH=/data/app.db
+    volumes:
+      - bbolt_data:/data
+    restart: unless-stopped
+
+volumes:
+  bbolt_data:

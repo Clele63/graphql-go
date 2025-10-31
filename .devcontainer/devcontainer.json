@@ -46,8 +46,10 @@
         "--security-opt", "seccomp=unconfined",
 		"--net",
 		"host",
-        "--env-file",
-        "${localWorkspaceFolder}/.env",
+        "-e",
+        "APP_ENV=dev",
+        "-e",
+        "BBOLT_PATH=${containerWorkspaceFolder}/server/db/data/app.db",
         "--name",
         "GraphqlGoApp-devcontainer"
 	],

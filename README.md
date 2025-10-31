@@ -66,7 +66,7 @@ cd graphql-go
 ### 2. Lancer le conteneur monolithe
 
 ```bash
-docker compose --build -d up
+docker compose up --build -d
 ```
 
 \> Le serveur écoute sur `http://localhost:6000` ou les ports suivants.
