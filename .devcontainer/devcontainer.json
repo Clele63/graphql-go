@@ -1,0 +1,56 @@
+{
+    "name": "GraphqlGo Eval DevContainer",
+	"build": {
+		"dockerfile": "Dockerfile",
+        "context": ".."
+    },
+    "workspaceFolder": "/workspaces/GraphqlGoApp",
+    "mounts": [
+        "type=bind,source=/home/${localEnv:USER}/.ssh,target=/home/vscode/.ssh,readonly",
+        "type=bind,source=/home/${localEnv:USER}/.gitconfig,target=/home/vscode/.gitconfig",
+        "type=bind,source=/home/${localEnv:USER}/.zsh_history,target=/home/vscode/.zsh_history"
+    ],
+    "containerEnv": {
+        "GOPATH": "/home/vscode/go"
+    },
+    "customizations": {
+        "vscodium": {
+            "extensions": {
+                "golang.Go": {},
+                "graphql.vscode-graphql":{},
+                "graphql.vscode-graphql-syntax":{},
+                "graphql.vscode-graphql-execution":{},
+                "esbenp.prettier-vscode": {},
+                "dbaeumer.vscode-eslint": {},
+                "webben.browserslist": {
+                    "registry": "openvsx",
+                    "version": "11.0.0"
+                }
+            },
+            "registries": {
+                "openvsx": {
+                    "url": "https://open-vsx.org/vscode/gallery",
+                    "headers": {
+                        "Accept": "application/json"
+                    }
+                }
+            }
+        }
+    },
+    "forwardPorts": [],
+	"runArgs": [
+        "-ti",
+		"--privileged",
+		"--init", 
+        "--cap-add=SYS_PTRACE", 
+        "--security-opt", "seccomp=unconfined",
+		"--net",
+		"host",
+        "--env-file",
+        "${localWorkspaceFolder}/.env",
+        "--name",
+        "GraphqlGoApp-devcontainer"
+	],
+    // "postStartCommand": "cd /workspaces/GraphqlGoApp/client && npm install && cd /workspaces/GraphqlGoApp/server && go install",
+    "remoteUser": "vscode"
+}
