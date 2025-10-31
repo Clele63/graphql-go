@@ -6,7 +6,6 @@ import (
 	"os"
 	"path/filepath"
 
-	"workbench/graphql-app/db"
 	"workbench/graphql-app/graph/connect"
 	"workbench/graphql-app/graph/exec"
 	"workbench/graphql-app/graph/resolver"
@@ -22,7 +21,7 @@ import (
 	"github.com/vektah/gqlparser/v2/ast"
 )
 
-const defaultPort = "6000"
+const defaultPort = "6060"
 const defaultAppEnv = "dev"
 
 func main() {
@@ -35,15 +34,7 @@ func main() {
 		appEnv = defaultAppEnv
 	}
 
-	// connect.InitDB()
-	database, err := db.SetupDB()
-	if err != nil {
-		log.Fatalf("failed to setup the DB: %v", err)
-	}
-	err = database.InitDB()
-	if err != nil {
-		log.Panicf("failed to initialize the DB: %v", err)
-	}
+	connect.InitDB()
 
 	resolver := &resolver.Resolver{
 		Queries: connect.GetQueries(),
@@ -91,8 +82,8 @@ func main() {
 		})
 	}
 
-	log.Printf("connect to http://localhost:%s/ for GraphQL playground", port)
-	err = http.ListenAndServe(":"+port, router)
+	log.Printf("connect to http://localhost:%s/playground for GraphQL playground", port)
+	err := http.ListenAndServe(":"+port, router)
 	if err != nil {
 		panic(err)
 	}

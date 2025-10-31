@@ -1,0 +1,9 @@
+type Mutation {
+  # Users CRUD
+  createUser(input: CreateUserInput!): User!
+  updateUser(input: UpdateUserInput!): User!
+  deleteUser(id: ID!): Boolean!
+
+  # Login
+  login(name: String!, password: String!): Token!
+}

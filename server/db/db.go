@@ -44,3 +44,12 @@ func (database *Database) InitDB() error {
 	})
 	return err
 }
+
+// database, err := db.SetupDB()
+// if err != nil {
+// 	log.Fatalf("failed to setup the DB: %v", err)
+// }
+// err = database.InitDB()
+// if err != nil {
+// 	log.Panicf("failed to initialize the DB: %v", err)
+// }

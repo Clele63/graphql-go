@@ -1,0 +1,10 @@
+version: "2"
+sql:
+  - engine: "mysql"
+    schema: "graph/connect/data/schema.sql"
+    queries: "queries/sql/"
+    gen:
+      go:
+        package: "generated"
+        out: "queries/generated"
+        emit_interface: true

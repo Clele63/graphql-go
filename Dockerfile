@@ -1,6 +1,6 @@
-ARG NODE_VERSION="20"
-ARG GO_VERSION="1.25"
-ARG ALPINE_BUILD_VERSION="3.20"
+ARG NODE_VERSION=20
+ARG GO_VERSION=1.25
+ARG ALPINE_BUILD_VERSION=3.20
 
 FROM node:${NODE_VERSION}-alpine AS client-builder
 
@@ -24,10 +24,10 @@ RUN go mod download
 
 COPY server/ ./
 
-RUN CGO_ENABLED=0 GOOS=linux go build -o /server server.go
+RUN CGO_ENABLED=0 GOOS=linux go build -o /server -tags embed server.go
 
 
-FROM alpine:${ALPINE_BUILD_VERSION} AS GraphQL-Go-App
+FROM alpine:${ALPINE_BUILD_VERSION} AS graphql-go-app
 
 WORKDIR /app
 

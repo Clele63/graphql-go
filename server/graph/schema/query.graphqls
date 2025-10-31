@@ -1,0 +1,6 @@
+union SearchResult = User
+
+type Query {
+  users: [User!]!
+  search(term: String!): [SearchResult!]!
+}
