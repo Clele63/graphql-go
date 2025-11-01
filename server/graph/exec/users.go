@@ -125,7 +125,7 @@ func (ec *executionContext) _User_creationDate(ctx context.Context, field graphq
 			return obj.CreationDate, nil
 		},
 		nil,
-		ec.marshalNString2string,
+		ec.marshalNDate2workbenchᚋgraphqlᚑappᚋgraphᚋresolverᚋscalarᚐDate,
 		true,
 		true,
 	)
@@ -138,7 +138,7 @@ func (ec *executionContext) fieldContext_User_creationDate(_ context.Context, fi
 		IsMethod:   false,
 		IsResolver: false,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			return nil, errors.New("field of type String does not have child fields")
+			return nil, errors.New("field of type Date does not have child fields")
 		},
 	}
 	return fc, nil
@@ -185,7 +185,7 @@ func (ec *executionContext) unmarshalInputCreateUserInput(ctx context.Context, o
 			it.Email = data
 		case "creation_date":
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("creation_date"))
-			data, err := ec.unmarshalNString2string(ctx, v)
+			data, err := ec.unmarshalNDate2workbenchᚋgraphqlᚑappᚋgraphᚋresolverᚋscalarᚐDate(ctx, v)
 			if err != nil {
 				return it, err
 			}

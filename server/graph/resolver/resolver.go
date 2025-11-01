@@ -11,8 +11,6 @@ type Resolver struct {
 
 func (r *Resolver) Query() exec.QueryResolver       { return &queryResolver{r} }
 func (r *Resolver) Mutation() exec.MutationResolver { return &mutationResolver{r} }
-func (r *Resolver) Token() exec.TokenResolver       { return &tokenResolver{r} }
 
 type queryResolver struct{ *Resolver }
 type mutationResolver struct{ *Resolver }
-type tokenResolver struct{ *Resolver }

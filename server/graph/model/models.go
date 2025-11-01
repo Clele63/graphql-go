@@ -1,5 +1,7 @@
 package model
 
+import "workbench/graphql-app/graph/resolver/scalar"
+
 type Node interface {
 	IsNode()
 	GetID() string
@@ -10,10 +12,10 @@ type SearchResult interface {
 }
 
 type CreateUserInput struct {
-	Name         string `json:"name"`
-	Password     string `json:"password"`
-	Email        string `json:"email"`
-	CreationDate string `json:"creation_date"`
+	Name         string      `json:"name"`
+	Password     string      `json:"password"`
+	Email        string      `json:"email"`
+	CreationDate scalar.Date `json:"creation_date"`
 }
 
 type Mutation struct {

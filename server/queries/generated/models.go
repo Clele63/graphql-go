@@ -5,7 +5,7 @@
 package generated
 
 import (
-	"time"
+	"workbench/graphql-app/graph/resolver/scalar"
 )
 
 type User struct {
@@ -13,5 +13,5 @@ type User struct {
 	Name         string
 	Password     string
 	Email        string
-	CreationDate time.Time
+	CreationDate scalar.Date
 }

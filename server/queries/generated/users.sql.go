@@ -7,7 +7,8 @@ package generated
 
 import (
 	"context"
-	"time"
+
+	"workbench/graphql-app/graph/resolver/scalar"
 )
 
 const getUserAuthByName = `-- name: GetUserAuthByName :one
@@ -35,7 +36,7 @@ type GetUserByIDRow struct {
 	ID           string
 	Name         string
 	Email        string
-	CreationDate time.Time
+	CreationDate scalar.Date
 }
 
 func (q *Queries) GetUserByID(ctx context.Context, id string) (GetUserByIDRow, error) {
@@ -59,7 +60,7 @@ type ListUsersRow struct {
 	ID           string
 	Name         string
 	Email        string
-	CreationDate time.Time
+	CreationDate scalar.Date
 }
 
 // queries/sql/users.sql
@@ -99,7 +100,7 @@ type SearchUsersByNameRow struct {
 	ID           string
 	Name         string
 	Email        string
-	CreationDate time.Time
+	CreationDate scalar.Date
 }
 
 func (q *Queries) SearchUsersByName(ctx context.Context, lower string) ([]SearchUsersByNameRow, error) {

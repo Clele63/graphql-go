@@ -10,10 +10,6 @@ func sqlcUserToGraphUser(u generated.User) *model.User {
 		ID:           u.ID,
 		Name:         u.Name,
 		Email:        u.Email,
-		CreationDate: u.CreationDate.Format("2006-01-02"),
+		CreationDate: u.CreationDate,
 	}
-}
-
-func strPtr(s string) *string {
-	return &s
 }

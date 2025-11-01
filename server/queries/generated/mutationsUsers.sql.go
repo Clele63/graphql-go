@@ -7,7 +7,8 @@ package generated
 
 import (
 	"context"
-	"time"
+
+	"workbench/graphql-app/graph/resolver/scalar"
 )
 
 const createUser = `-- name: CreateUser :exec
@@ -20,7 +21,7 @@ type CreateUserParams struct {
 	Name         string
 	Password     string
 	Email        string
-	CreationDate time.Time
+	CreationDate scalar.Date
 }
 
 // queries/sql/mutationsUsers.sql

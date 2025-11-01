@@ -3,10 +3,10 @@ package resolver
 import (
 	"context"
 	"errors"
-	"fmt"
 	"time"
 
 	"workbench/graphql-app/graph/model"
+	"workbench/graphql-app/graph/resolver/scalar"
 	"workbench/graphql-app/queries/generated"
 	"workbench/graphql-app/utils"
 )
@@ -15,16 +15,11 @@ import (
 
 // CreateUser is the resolver for the createUser field.
 func (r *mutationResolver) CreateUser(ctx context.Context, input model.CreateUserInput) (*model.User, error) {
-	creation, err := time.Parse("2006-01-02", input.CreationDate)
-	if err != nil {
-		return nil, fmt.Errorf("invalid start date: %w", err)
-	}
-
-	err = r.Queries.CreateUser(ctx, generated.CreateUserParams{
+	err := r.Queries.CreateUser(ctx, generated.CreateUserParams{
 		Name:         input.Name,
 		Password:     input.Password,
 		Email:        input.Email,
-		CreationDate: creation,
+		CreationDate: input.CreationDate,
 	})
 
 	if err != nil {
@@ -73,7 +68,7 @@ func (r *mutationResolver) DeleteUser(ctx context.Context, id string) (bool, err
 func (r *mutationResolver) Login(ctx context.Context, name string, password string) (*model.Token, error) {
 	user, err := r.Queries.GetUserAuthByName(ctx, name)
 	if err != nil {
-		return nil, errors.New("User not found")
+		return nil, errors.New("user not found")
 	}
 
 	if !utils.ComparePassword(password, user.Password) {
@@ -83,7 +78,7 @@ func (r *mutationResolver) Login(ctx context.Context, name string, password stri
 	expiredAt := time.Now().Add(time.Hour * 1)
 	obj := &model.Token{
 		Token:     utils.GenerateJwt(user.ID, int64(expiredAt.Unix())),
-		ExpiredAt: expiredAt,
+		ExpiredAt: scalar.Date{Time: &expiredAt},
 	}
 
 	return obj, nil

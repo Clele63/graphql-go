@@ -1,14 +1,14 @@
 package model
 
 import (
-	"time"
+	"workbench/graphql-app/graph/resolver/scalar"
 
 	"github.com/dgrijalva/jwt-go"
 )
 
 type Token struct {
-	Token     string    `json:"token"`
-	ExpiredAt time.Time `json:"-"`
+	Token     string      `json:"token"`
+	ExpiredAt scalar.Date `json:"-"`
 }
 
 type UserClaims struct {

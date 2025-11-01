@@ -35,7 +35,6 @@ type Config struct {
 type ResolverRoot interface {
 	Mutation() MutationResolver
 	Query() QueryResolver
-	Token() TokenResolver
 }
 
 type DirectiveRoot struct {
@@ -304,7 +303,8 @@ func (ec *executionContext) introspectType(name string) (*introspection.Type, er
 var sources = []*ast.Source{
 	{Name: "../schema/common.graphqls", Input: `interface Node {
   id: ID!
-}`, BuiltIn: false},
+}
+`, BuiltIn: false},
 	{Name: "../schema/directives.graphqls", Input: `directive @goModel(
 	model: String
 	models: [String!]
@@ -347,23 +347,24 @@ type Query {
   search(term: String!): [SearchResult!]!
 }
 `, BuiltIn: false},
+	{Name: "../schema/scalars.graphqls", Input: `scalar Date`, BuiltIn: false},
 	{Name: "../schema/token.graphqls", Input: `type Token @goModel(model: "workbench/graphql-app/graph/model.Token"){
   token: String!
-  expired_at: Int!
+  expired_at: Date!
 }
 `, BuiltIn: false},
 	{Name: "../schema/users.graphqls", Input: `type User implements Node @goModel(model: "workbench/graphql-app/graph/model.User") {
   id: ID!
   name: String!
   email: String!
-  creationDate: String!
+  creationDate: Date!
 }
 
 input CreateUserInput {
   name: String!
   password: String!
   email: String!
-  creation_date: String!
+  creation_date: Date!
 }
 
 input UpdateUserInput {

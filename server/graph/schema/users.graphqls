@@ -2,14 +2,14 @@ type User implements Node @goModel(model: "workbench/graphql-app/graph/model.Use
   id: ID!
   name: String!
   email: String!
-  creationDate: String!
+  creationDate: Date!
 }
 
 input CreateUserInput {
   name: String!
   password: String!
   email: String!
-  creation_date: String!
+  creation_date: Date!
 }
 
 input UpdateUserInput {

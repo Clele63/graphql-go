@@ -8,3 +8,9 @@ sql:
         package: "generated"
         out: "queries/generated"
         emit_interface: true
+        overrides:
+          - column: "users.creation_date"
+            go_type:
+              import: "workbench/graphql-app/graph/resolver/scalar"
+              type: "Date"     
+
