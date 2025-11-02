@@ -1,12 +1,12 @@
 package resolver
 
 import (
+	"workbench/graphql-app/db"
 	"workbench/graphql-app/graph/exec"
-	"workbench/graphql-app/queries/wrapper"
 )
 
 type Resolver struct {
-	Queries *wrapper.WrappedQueries
+	Services *db.Services
 }
 
 func (r *Resolver) Query() exec.QueryResolver       { return &queryResolver{r} }

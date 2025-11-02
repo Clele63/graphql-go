@@ -19,17 +19,14 @@ func (r *queryResolver) Users(ctx context.Context) ([]*model.User, error) {
 		return nil, errors.New("access denied")
 	}
 
-	rows, err := r.Queries.ListUsers(ctx)
+	rows, err := r.Services.Users.ListUsers()
 	if err != nil {
 		return nil, err
 	}
 
 	out := make([]*model.User, 0, len(rows))
 	for _, u := range rows {
-		out = append(out, &model.User{
-			ID:   u.ID,
-			Name: u.Name,
-		})
+		out = append(out, badgerUserToGraphUser(u))
 	}
 	return out, nil
 }
@@ -49,14 +46,13 @@ func (r *queryResolver) Search(ctx context.Context, term string) ([]model.Search
 	var results []model.SearchResult
 
 	// Search Users
-	users, err := r.Queries.SearchUsersByName(ctx, term)
-
+	users, err := r.Services.Users.SearchUsersByName(term) // Pas de contexte
 	if err != nil {
 		return nil, err
 	}
 
 	for _, u := range users {
-		results = append(results, sqlcUserToGraphUser(u))
+		results = append(results, badgerUserToGraphUser(u))
 	}
 
 	return results, nil

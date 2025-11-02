@@ -12,48 +12,13 @@ services:
       - "6060:6060"
     environment:
       APP_ENV: prod
-      DB_USERNAME: username
-      DB_PASSWORD: password
-      DB_DATABASE: database_name
-      DB_HOST: graphql-go-database
-      DB_PORT: 3306
-      DB_URI: "username:password@tcp(graphql-go-database:3306)/database_name?charset=utf8mb4&parseTime=True&loc=Local"
       PORT: 6060
-    depends_on:
-      graphql-go-database:
-        condition: service_healthy
-    networks:
-      - graphql-go-network
-    restart: unless-stopped
-  
-  graphql-go-database:
-    container_name: GraphqlGoDatabase
-    image: mysql:5.7
-    restart: always
-    hostname: graphql-go-database
-    environment:
-      MYSQL_DATABASE: database_name
-      MYSQL_USER: username
-      MYSQL_PASSWORD: password
-      MYSQL_ROOT_PASSWORD: password
-    ports:
-      - "3306:3306"
+      BADGER_PATH: /data/app.db
     volumes:
-      - graphql-go-data:/var/lib/mysql
-    healthcheck:
-      test: "mysqladmin ping -h localhost -p$$MYSQL_ROOT_PASSWORD"
-      interval: 3s
-      timeout: 3s
-      retries: 2
-      start_period: 0s
-    networks:
-      - graphql-go-network
+      - badger_data:/data
 
+    restart: unless-stopped
 
 volumes:
-  graphql-go-data:
-
-networks:
-  graphql-go-network:
-    driver: bridge
+  badger_data:
 

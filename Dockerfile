@@ -24,7 +24,7 @@ RUN go mod download
 
 COPY server/ ./
 
-RUN CGO_ENABLED=0 GOOS=linux go build -o /server -tags embed server.go
+RUN CGO_ENABLED=0 GOOS=linux go build -o /server server.go
 
 
 FROM alpine:${ALPINE_BUILD_VERSION} AS graphql-go-app

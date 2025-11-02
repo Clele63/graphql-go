@@ -34,10 +34,10 @@ func main() {
 		appEnv = defaultAppEnv
 	}
 
-	connect.InitDB()
+	BadgerDB := connect.InitDB()
 
 	resolver := &resolver.Resolver{
-		Queries: connect.GetQueries(),
+		Services: BadgerDB.Services,
 	}
 
 	router := chi.NewRouter()

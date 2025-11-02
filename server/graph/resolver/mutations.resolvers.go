@@ -7,7 +7,7 @@ import (
 
 	"workbench/graphql-app/graph/model"
 	"workbench/graphql-app/graph/resolver/scalar"
-	"workbench/graphql-app/queries/generated"
+	"workbench/graphql-app/middlewares"
 	"workbench/graphql-app/utils"
 )
 
@@ -15,47 +15,42 @@ import (
 
 // CreateUser is the resolver for the createUser field.
 func (r *mutationResolver) CreateUser(ctx context.Context, input model.CreateUserInput) (*model.User, error) {
-	err := r.Queries.CreateUser(ctx, generated.CreateUserParams{
-		Name:         input.Name,
-		Password:     input.Password,
-		Email:        input.Email,
-		CreationDate: input.CreationDate,
-	})
+	userAuth := middlewares.GetAuthFromContext(ctx)
+	if userAuth.UserID == "0" {
+		return nil, errors.New("access denied")
+	}
 
+	userMap, err := r.Services.Users.CreateUser(input.Name, input.Password, input.Email)
 	if err != nil {
 		return nil, err
 	}
 
-	user, err := r.Queries.GetCreatedUser(ctx)
-	if err != nil {
-		return nil, err
-	}
-
-	return sqlcUserToGraphUser(user), nil
+	return badgerUserToGraphUser(userMap), nil
 }
 
 // UpdateUser is the resolver for the updateUser field.
 func (r *mutationResolver) UpdateUser(ctx context.Context, input model.UpdateUserInput) (*model.User, error) {
-	err := r.Queries.UpdateUser(ctx, generated.UpdateUserParams{
-		ID:    input.ID,
-		Name:  *input.Name,
-		Email: *input.Email,
-	})
+	userAuth := middlewares.GetAuthFromContext(ctx)
+	if userAuth.UserID == "0" {
+		return nil, errors.New("access denied")
+	}
+
+	userMap, err := r.Services.Users.UpdateUser(input.ID, input.Name)
 	if err != nil {
 		return nil, err
 	}
 
-	user, err := r.Queries.GetUpdatedUser(ctx, input.ID)
-	if err != nil {
-		return nil, err
-	}
-
-	return sqlcUserToGraphUser(user), nil
+	return badgerUserToGraphUser(userMap), nil
 }
 
 // DeleteUser is the resolver for the deleteUser field.
 func (r *mutationResolver) DeleteUser(ctx context.Context, id string) (bool, error) {
-	err := r.Queries.DeleteUser(ctx, id)
+	userAuth := middlewares.GetAuthFromContext(ctx)
+	if userAuth.UserID == "0" {
+		return false, errors.New("access denied")
+	}
+
+	err := r.Services.Users.DeleteUser(id)
 	if err != nil {
 		return false, err
 	}
@@ -66,18 +61,19 @@ func (r *mutationResolver) DeleteUser(ctx context.Context, id string) (bool, err
 
 // Login is the resolver for the login field.
 func (r *mutationResolver) Login(ctx context.Context, name string, password string) (*model.Token, error) {
-	user, err := r.Queries.GetUserAuthByName(ctx, name)
+	user, err := r.Services.Users.GetUserAuthByName(name)
 	if err != nil {
 		return nil, errors.New("user not found")
 	}
-
-	if !utils.ComparePassword(password, user.Password) {
+	if !utils.ComparePassword(password, user["password"]) {
 		return nil, errors.New("passwords doesn't match")
 	}
 
 	expiredAt := time.Now().Add(time.Hour * 1)
+	userID := user["id"]
+
 	obj := &model.Token{
-		Token:     utils.GenerateJwt(user.ID, int64(expiredAt.Unix())),
+		Token:     utils.GenerateJwt(userID, int64(expiredAt.Unix())),
 		ExpiredAt: scalar.Date{Time: &expiredAt},
 	}
 

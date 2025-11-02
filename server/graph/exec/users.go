@@ -155,7 +155,7 @@ func (ec *executionContext) unmarshalInputCreateUserInput(ctx context.Context, o
 		asMap[k] = v
 	}
 
-	fieldsInOrder := [...]string{"name", "password", "email", "creation_date"}
+	fieldsInOrder := [...]string{"name", "password", "email"}
 	for _, k := range fieldsInOrder {
 		v, ok := asMap[k]
 		if !ok {
@@ -183,13 +183,6 @@ func (ec *executionContext) unmarshalInputCreateUserInput(ctx context.Context, o
 				return it, err
 			}
 			it.Email = data
-		case "creation_date":
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("creation_date"))
-			data, err := ec.unmarshalNDate2workbenchᚋgraphqlᚑappᚋgraphᚋresolverᚋscalarᚐDate(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.CreationDate = data
 		}
 	}
 
@@ -203,7 +196,7 @@ func (ec *executionContext) unmarshalInputUpdateUserInput(ctx context.Context, o
 		asMap[k] = v
 	}
 
-	fieldsInOrder := [...]string{"id", "name", "email"}
+	fieldsInOrder := [...]string{"id", "name"}
 	for _, k := range fieldsInOrder {
 		v, ok := asMap[k]
 		if !ok {
@@ -224,13 +217,6 @@ func (ec *executionContext) unmarshalInputUpdateUserInput(ctx context.Context, o
 				return it, err
 			}
 			it.Name = data
-		case "email":
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("email"))
-			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.Email = data
 		}
 	}
 

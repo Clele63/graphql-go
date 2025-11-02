@@ -364,13 +364,11 @@ input CreateUserInput {
   name: String!
   password: String!
   email: String!
-  creation_date: Date!
 }
 
 input UpdateUserInput {
   id: ID!
   name: String
-  email: String
 }
 `, BuiltIn: false},
 }
