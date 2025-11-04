@@ -4,7 +4,7 @@ Ce projet est un serveur backend en Go qui expose une API GraphQL. Il utilise **
 
 ## 📚 Documentation
 
-Une documentation technique détaillée du code backend et de l'API est disponible dans le dossier [`/server/docs/README.md`](./docs/README.md).
+Une documentation technique détaillée du code backend et de l'API est disponible dans le dossier [`/server/docs/README.md`](./server/docs/README.md).
 
 ## 🚀 Stack Technique
 
