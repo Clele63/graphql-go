@@ -18,3 +18,4 @@ SELECT * FROM users WHERE id = ?;
 
 -- name: DeleteUser :exec
 DELETE FROM users WHERE id = ?;
+ 

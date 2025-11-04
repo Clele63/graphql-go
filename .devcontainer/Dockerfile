@@ -21,3 +21,4 @@ RUN go install -v honnef.co/go/tools/cmd/staticcheck@latest
 RUN go install -v github.com/go-delve/delve/cmd/dlv@latest
 RUN go install -v github.com/99designs/gqlgen@latest
 RUN go install -v github.com/sqlc-dev/sqlc/cmd/sqlc@latest
+RUN go install -v github.com/Code-Hex/gqldoc/cmd/gqldoc@latest

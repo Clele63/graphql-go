@@ -1,252 +1,158 @@
-# GraphQL App — React (TypeScript) + Go (gqlgen + BoltDB)
+# Projet GraphQL Go (gqlgen + sqlc + MySQL)
 
-* **Frontend :** React + TypeScript + Apollo Client
-* **Backend :** Go + gqlgen (GraphQL server)
-* **Base de données :** BoltDB (base embarquée, sans serveur)
+Ce projet est un serveur backend en Go qui expose une API GraphQL. Il utilise **gqlgen** pour la génération du serveur GraphQL et **sqlc** pour générer un code Go typesafe à partir de requêtes SQL brutes, le tout connecté à une base de données **MySQL**.
 
----
+## 📚 Documentation
 
-## 🧱 Architecture générale
+Une documentation technique détaillée du code backend et de l'API est disponible dans le dossier [`/server/docs/README.md`](./docs/README.md).
 
-<!-- TODO -->
+## 🚀 Stack Technique
+
+* **Backend** : Go
+* **API** : GraphQL via `gqlgen`
+* **Base de Données** : MySQL
+* **Accès BDD** : `sqlc` (pour la génération de code à partir de SQL)
+* **Routage** : `chi`
+* **Authentification** : JWT (tokens) via un middleware personnalisé
+* **Déploiement** : Docker & Docker Compose
+
+## ✨ Fonctionnalités
+
+* **Gestion des Utilisateurs (CRUD)** : Créer, mettre à jour et supprimer des utilisateurs.
+* **Authentification** : Une mutation `login` qui vérifie un utilisateur et retourne un JSON Web Token (JWT).
+* **Recherche** : Rechercher des utilisateurs par nom (protégé par authentification).
+* **Listing** : Lister tous les utilisateurs (protégé par authentification).
+
+## 🏗️ Architecture du Projet
+
+Voici une arborescence de projet corrigée et complétée, basée sur l'ensemble des fichiers fournis :
+
 ```
-client/            → Application React (TypeScript)
-server/            → Serveur Go GraphQL
-  ├── graph/       → Schéma, resolvers et modèles gqlgen
-  ├── db/          → Gestion de BoltDB (ouverture, buckets, utils)
-  ├── middlewares/ → Gestion des middlewares (jwt)
-  ├── utils/       → Gestion de ressources utiles (jwt, password)
-  ├── go.mod       → Déclaration du module
-  └── server.go    → Entrée principale du serveur
-```
-
-Le serveur GraphQL expose un **unique endpoint** :
-
-```
-http://localhost:6000/query
-```
-
-et un **GraphQL Playground** est disponible sur :
-
-```
-http://localhost:6000/playground
-```
-
----
-
-## 🚀 Stack technique
-
-### Frontend
-
-* **React + Vite + TypeScript**
-* **Apollo Client** pour la communication GraphQL
-* **TailwindCSS** (optionnel, pour le style rapide)
-* **React Router** pour la navigation
-
-### Backend
-
-* **Go 1.25.0**
-* **gqlgen** pour la génération automatique du serveur GraphQL
-* **bbolt** (fork officiel de BoltDB) pour la base de données embarqué
-* **uuid** pour les identifiants uniques
-* **net/http** pour l’exposition du serveur
-* **chi** pour le routage avec authentification jwt
-
----
-
-## ⚙️ Installation et lancement
-
-### 1. Cloner le projet
-
-```bash
-git clone https://github.com/Clele63/graphql-go.git
-cd graphql-go
-```
-
-### 2. Lancer le conteneur monolithe
-
-```bash
-docker compose up --build -d
-```
-
-\> Le serveur écoute sur `http://localhost:6000` ou les ports suivants.
-
-\> Le client écoute sur `http://localhost:3000` ou les ports suivants.
-
-#### Structure minimale du backend
-
-<!-- TODO -->
-```
-server/
-│
-├── graph/
-│   ├── schema.graphqls     # Définition du schéma GraphQL
-│   ├── model/              # Types générés
-│   ├── resolver.go         # Injection des dépendances
-│   ├── mutation_resolver.go
-│   └── query_resolver.go
-│
-├── db/
-│   └── db.go               # Initialisation de BoltDB
-│
-└── server.go                 # Serveur principal
+./
+├── .devcontainer/        # Configuration pour le développement distant
+│   ├── .dockerignore
+│   ├── Dockerfile
+│   └── devcontainer.json
+├── .vscode/              # Paramètres de l'éditeur VSCode
+│   ├── launch.json
+│   └── settings.json
+├── client/               # Application Frontend (inféré du Dockerfile)
+│   ├── build/            # Output du build, servi par server.go
+│   └── ...               # Autres fichiers: package.json, src/, ...
+├── server/               # Application Backend Go
+│   ├── docs/                 # Documentation technique
+│   │   ├── server.md
+│   │   ├── utils.md
+│   │   ├── middleware.md
+│   │   ├── connect.md
+│   │   ├── queries.md
+│   │   └── README.md         # Table des matières de la documentation
+│   ├── graph/
+│   │   ├── connect/      # Logique de connexion BDD et chargement schema
+│   │   │   ├── data/
+│   │   │   │   ├── mock.sql
+│   │   │   │   └── schema.sql
+│   │   │   ├── dbConnect.go
+│   │   │   ├── execSql.go
+│   │   │   └── ...
+│   │   ├── exec/         # Code auto-généré par gqlgen
+│   │   ├── model/        # Modèles Go (générés et manuels)
+│   │   ├── resolver/
+│   │   │   ├── scalar/
+│   │   │   │   └── date.go
+│   │   │   ├── mutations.resolvers.go
+│   │   │   ├── query.resolvers.go
+│   │   │   ├── resolver.go
+│   │   │   └── ...
+│   │   └── schema/       # Schémas GraphQL (.graphqls)
+│   ├── middlewares/      # Middlewares HTTP (ex: JWT)
+│   │   └── jwt.go
+│   ├── queries/
+│   │   ├── generated/    # Code Go typesafe généré par sqlc
+│   │   ├── sql/          # Requêtes SQL sources pour sqlc
+│   │   └── wrapper/      # Wrapper pour les requêtes (logging, etc.)
+│   ├── tools/
+│   │   └── tools.go
+│   ├── utils/            # Fonctions utilitaires (JWT, mot de passe)
+│   │   ├── jwt.go
+│   │   └── password.go
+│   ├── go.mod
+│   ├── go.sum
+│   ├── gqlgen.yml
+│   ├── server.go         # Point d'entrée du serveur (routes chi)
+│   └── sqlc.yml
+├── .gitignore
+├── Dockerfile            # Dockerfile multi-stage (build client + build serveur)
+├── docker-compose.yml    # Orchestre l'application et la BDD MySQL
+└── README.md             # Ce fichier
 ```
 
-#### Structure minimale du frontend
+## ⚙️ Installation et Lancement
 
-<!-- TODO -->
-```
-frontend/
-│
-├── src/
-│   ├── apollo/
-│   │   └── client.ts       # Configuration Apollo Client
-│   ├── components/
-│   │   └── UserList.tsx    # Exemple de requête GraphQL
-│   ├── pages/
-│   │   ├── Home.tsx
-│   │   └── CreateUser.tsx
-│   ├── App.tsx
-│   └── main.tsx
-│
-├── index.html
-└── package.json
-```
+Ce projet est entièrement conteneurisé.
 
----
+**Prérequis** : Docker et Docker Compose.
 
-<!-- TODO -->
-<!-- ## Exemple de schéma GraphQL
+1.  Clonez le dépôt.
+2.  À la racine du projet, exécutez :
+
+    ```bash
+    docker compose up --build
+    ```
+
+3.  Le `docker-compose.yml` va :
+    * Construire et démarrer le service `graphql-go-database` (MySQL).
+    * Construire l'image `graphql-go-app` en utilisant le `Dockerfile` (qui build le client Node.js *puis* le serveur Go).
+    * Démarrer le service `graphql-go-app` (le serveur Go).
+    * Le serveur Go attendra que la base de données soit saine avant de démarrer.
+
+## 🛠️ Utilisation
+
+* **GraphQL Playground** : `http://localhost:6060/playground`
+* **Endpoint API** : `http://localhost:6060/query`
+* **Client Frontend** : `http://localhost:6060/` (servi par Go en mode `prod`)
+
+### Exemples de Requêtes
+
+#### 1. Créer un utilisateur
 
 ```graphql
-# backend/graph/schema.graphqls
-
-type User {
-  id: ID!
-  name: String!
-}
-
-input NewUser {
-  name: String!
-}
-
-type Query {
-  users: [User!]!
-}
-
-type Mutation {
-  createUser(input: NewUser!): User!
-}
-```
-
----
-
-## Exemple de stockage avec BoltDB
-
-Chaque utilisateur est stocké dans un bucket `users` sous forme JSON.
-
-```go
-// backend/db/db.go
-package db
-
-import (
-  "encoding/json"
-  "go.etcd.io/bbolt"
-  "log"
-)
-
-func InitDB(path string) *bbolt.DB {
-  db, err := bbolt.Open(path, 0666, nil)
-  if err != nil {
-    log.Fatal(err)
-  }
-
-  db.Update(func(tx *bbolt.Tx) error {
-    _, err := tx.CreateBucketIfNotExists([]byte("users"))
-    return err
-  })
-
-  return db
-}
-```
-
----
-
-## 🔀 Exemple de resolver
-
-```go
-// backend/graph/query_resolver.go
-func (r *queryResolver) Users(ctx context.Context) ([]*model.User, error) {
-  var users []*model.User
-  err := r.DB.View(func(tx *bbolt.Tx) error {
-    b := tx.Bucket([]byte("users"))
-    return b.ForEach(func(_, v []byte) error {
-      var u model.User
-      if err := json.Unmarshal(v, &u); err != nil {
-        return err
-      }
-      users = append(users, &u)
-      return nil
-    })
-  })
-  return users, err
-}
-```
-
----
-
-## 🔄 Exemple de mutation
-
-```go
-// backend/graph/mutation_resolver.go
-func (r *mutationResolver) CreateUser(ctx context.Context, input model.NewUser) (*model.User, error) {
-  user := &model.User{
-    ID:   uuid.NewString(),
-    Name: input.Name,
-  }
-
-  err := r.DB.Update(func(tx *bbolt.Tx) error {
-    b := tx.Bucket([]byte("users"))
-    data, _ := json.Marshal(user)
-    return b.Put([]byte(user.ID), data)
-  })
-  if err != nil {
-    return nil, err
-  }
-  return user, nil
-}
-```
-
----
-
-## 🌐 Exemple d’appel côté frontend
-
-```tsx
-// frontend/src/components/UserList.tsx
-import { gql, useQuery } from "@apollo/client";
-
-const GET_USERS = gql`
-  query GetUsers {
-    users {
-      id
-      name
+mutation CreateUser {
+  createUser(
+    input: {
+      name: "TestUser"
+      password: "password123"
+      email: "test@example.com"
+      creation_date: "2024-01-01T00:00:00Z" # Format RFC3339
     }
+  ) {
+    id
+    name
+    email
   }
-`;
-
-export default function UserList() {
-  const { data, loading } = useQuery(GET_USERS);
-
-  if (loading) return <p>Loading...</p>;
-
-  return (
-    <ul>
-      {data.users.map((u: any) => (
-        <li key={u.id}>{u.name}</li>
-      ))}
-    </ul>
-  );
 }
-``` -->
+```
 
-<!-- --- -->
+```graphql
+mutation Login {
+  login(name: "TestUser", password: "password123") {
+    token
+  }
+}
+```
+
+```json
+{
+  "Authorization": "Bearer VOTRE_TOKEN_JWT_ICI"
+}
+```
+
+```graphql
+query GetUsers {
+  users {
+    id
+    name
+    creationDate
+  }
+}
+```
