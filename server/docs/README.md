@@ -34,5 +34,5 @@ Cette section détaille le fonctionnement interne du serveur Go, hors logique Gr
 
 Cette section documente le schéma GraphQL, y compris les types, les requêtes, les mutations et les scalaires personnalisés.
 
-* **[Documentation du Schéma GraphQL](./graphql/schema.md)**
+* **[Documentation du Schéma GraphQL](./graphql/README.md)**
     * *Documentation des schémas GraphQL*
