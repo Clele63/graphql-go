@@ -5,9 +5,11 @@ import (
 	"net/http"
 	"os"
 	"path/filepath"
+	"time"
 
 	"workbench/graphql-app/graph/connect"
 	"workbench/graphql-app/graph/exec"
+	"workbench/graphql-app/graph/model"
 	"workbench/graphql-app/graph/resolver"
 	"workbench/graphql-app/middlewares"
 
@@ -17,7 +19,9 @@ import (
 	"github.com/99designs/gqlgen/graphql/handler/transport"
 	"github.com/99designs/gqlgen/graphql/playground"
 	"github.com/go-chi/chi"
+	"github.com/go-chi/chi/middleware"
 	"github.com/go-chi/cors"
+	"github.com/gorilla/websocket"
 	"github.com/vektah/gqlparser/v2/ast"
 )
 
@@ -37,12 +41,12 @@ func main() {
 	connect.InitDB()
 
 	resolver := &resolver.Resolver{
-		Queries: connect.GetQueries(),
+		Queries:     connect.GetQueries(),
+		TaskSubs:    make(map[string][]chan *model.Task),
+		CommentSubs: make(map[string][]chan *model.Comment),
 	}
 
 	router := chi.NewRouter()
-
-	router.Use(middlewares.JwtMiddleware())
 
 	router.Use(cors.Handler(cors.Options{
 		AllowedOrigins:   []string{"https://*", "http://*"},
@@ -52,12 +56,26 @@ func main() {
 		AllowCredentials: true,
 		MaxAge:           300,
 	}))
+	router.Use(middleware.RequestID)
+	router.Use(middleware.Logger)
+	router.Use(middleware.Recoverer)
+	router.Use(middlewares.AuthMiddleware())
 
 	srv := handler.New(exec.NewExecutableSchema(exec.Config{Resolvers: resolver}))
 
 	srv.AddTransport(transport.Options{})
 	srv.AddTransport(transport.GET{})
 	srv.AddTransport(transport.POST{})
+	srv.AddTransport(transport.SSE{})
+	srv.AddTransport(transport.MultipartForm{})
+	srv.AddTransport(&transport.Websocket{
+		KeepAlivePingInterval: 10 * time.Second,
+		Upgrader: websocket.Upgrader{
+			CheckOrigin: func(r *http.Request) bool {
+				return true
+			},
+		},
+	})
 
 	srv.SetQueryCache(lru.New[*ast.QueryDocument](1000))
 

@@ -1,0 +1,4 @@
+type PageInfo @goModel(model: "workbench/graphql-app/graph/model.PageInfo") {
+  endCursor: String
+  hasNextPage: Boolean!
+}

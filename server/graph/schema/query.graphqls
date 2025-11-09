@@ -1,6 +1,9 @@
 union SearchResult = User
 
 type Query {
+  me: User
+  board: Board!
+  column(id: ID!): Column
   users: [User!]!
   search(term: String!): [SearchResult!]!
 }

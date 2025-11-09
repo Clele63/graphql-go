@@ -1,0 +1,34 @@
+type Task implements Node @goModel(model: "workbench/graphql-app/graph/model.Task") {
+  id: ID!
+  title: String!
+  description: String
+  status: String! @goField(forceResolver: true)
+  assignees: [User!]! @goField(forceResolver: true)
+  column: Column! @goField(forceResolver: true)
+  comments: [Comment!]! @goField(forceResolver: true)
+  createdAt: Date!  @goField(forceResolver: true)
+}
+
+type TaskEdge @goModel(model: "workbench/graphql-app/graph/model.TaskEdge") {
+  cursor: String!
+  node: Task!
+}
+
+type TaskConnection @goModel(model: "workbench/graphql-app/graph/model.TaskConnection") {
+  edges: [TaskEdge!]!
+  pageInfo: PageInfo!
+}
+
+input CreateTaskInput {
+  title: String!
+  description: String
+  assigneeIds: [ID!]
+  columnId: ID!
+}
+
+input UpdateTaskInput {
+  id: ID!
+  title: String
+  description: String
+  assigneeIds: [ID]
+}

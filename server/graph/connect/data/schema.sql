@@ -1,12 +1,55 @@
--- graph/connect/data/schema.sql
--- -- DROP (dev reset)
--- DROP TABLE IF EXISTS users;
+DROP TABLE IF EXISTS `task_assignees`;
+DROP TABLE IF EXISTS `comments`;
+DROP TABLE IF EXISTS `tasks`;
+DROP TABLE IF EXISTS `columns`;
+DROP TABLE IF EXISTS `boards`;
+DROP TABLE IF EXISTS `users`;
 
--- Users
-CREATE TABLE IF NOT EXISTS users (
-    id VARCHAR(36) PRIMARY KEY,
-    name VARCHAR(255) NOT NULL,   
-    password VARCHAR(155) NOT NULL,
-    email VARCHAR(255) NOT NULL,
-    creation_date DATE NOT NULL
+CREATE TABLE users (
+    id VARCHAR(50) PRIMARY KEY,
+    name VARCHAR(255) NOT NULL,
+    email VARCHAR(255) NOT NULL UNIQUE,
+    password VARCHAR(255) NOT NULL,
+    avatar VARCHAR(255),
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE boards (
+    id VARCHAR(50) PRIMARY KEY,
+    name VARCHAR(255) NOT NULL
+);
+
+CREATE TABLE columns (
+    id VARCHAR(50) PRIMARY KEY,
+    name VARCHAR(255) NOT NULL,
+    `order` INT NOT NULL,
+    board_id VARCHAR(50) NOT NULL,
+    FOREIGN KEY (board_id) REFERENCES boards(id) ON DELETE CASCADE
+);
+
+CREATE TABLE tasks (
+    id VARCHAR(50) PRIMARY KEY,
+    title VARCHAR(255) NOT NULL,
+    description TEXT,
+    column_id VARCHAR(50) NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (column_id) REFERENCES columns(id) ON DELETE CASCADE
+);
+
+CREATE TABLE comments (
+    id VARCHAR(50) PRIMARY KEY,
+    content TEXT NOT NULL,
+    author_id VARCHAR(50) NOT NULL,
+    task_id VARCHAR(50) NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (author_id) REFERENCES users(id) ON DELETE CASCADE,
+    FOREIGN KEY (task_id) REFERENCES tasks(id) ON DELETE CASCADE
+);
+
+CREATE TABLE task_assignees (
+    task_id VARCHAR(50) NOT NULL,
+    user_id VARCHAR(50) NOT NULL,
+    PRIMARY KEY (task_id, user_id),
+    FOREIGN KEY (task_id) REFERENCES tasks(id) ON DELETE CASCADE,
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
 );

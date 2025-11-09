@@ -1,0 +1,5 @@
+type Board implements Node @goModel(model: "workbench/graphql-app/graph/model.Board") {
+  id: ID!
+  name: String!
+  columns: [Column!]! @goField(forceResolver: true)
+}

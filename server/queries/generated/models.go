@@ -5,13 +5,47 @@
 package generated
 
 import (
-	"workbench/graphql-app/graph/resolver/scalar"
+	"database/sql"
 )
 
+type Board struct {
+	ID   string
+	Name string
+}
+
+type Column struct {
+	ID      string
+	Name    string
+	Order   int32
+	BoardID string
+}
+
+type Comment struct {
+	ID        string
+	Content   string
+	AuthorID  string
+	TaskID    string
+	CreatedAt sql.NullTime
+}
+
+type Task struct {
+	ID          string
+	Title       string
+	Description sql.NullString
+	ColumnID    string
+	CreatedAt   sql.NullTime
+}
+
+type TaskAssignee struct {
+	TaskID string
+	UserID string
+}
+
 type User struct {
-	ID           string
-	Name         string
-	Password     string
-	Email        string
-	CreationDate scalar.Date
+	ID        string
+	Name      string
+	Email     string
+	Password  string
+	Avatar    sql.NullString
+	CreatedAt sql.NullTime
 }

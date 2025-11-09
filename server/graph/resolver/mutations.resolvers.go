@@ -2,84 +2,265 @@ package resolver
 
 import (
 	"context"
-	"errors"
+	"database/sql"
+	"fmt"
 	"time"
-
 	"workbench/graphql-app/graph/model"
 	"workbench/graphql-app/graph/resolver/scalar"
 	"workbench/graphql-app/queries/generated"
 	"workbench/graphql-app/utils"
 )
 
-// ---------------- USERS ----------------
-
-// CreateUser is the resolver for the createUser field.
 func (r *mutationResolver) CreateUser(ctx context.Context, input model.CreateUserInput) (*model.User, error) {
-	err := r.Queries.CreateUser(ctx, generated.CreateUserParams{
-		Name:         input.Name,
-		Password:     input.Password,
-		Email:        input.Email,
-		CreationDate: input.CreationDate,
-	})
-
+	claims, err := MustGetUser(ctx)
 	if err != nil {
 		return nil, err
 	}
-
-	user, err := r.Queries.GetCreatedUser(ctx)
+	hashedPassword, err := utils.HashPassword(input.Password)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("error hashing password: %w", err)
 	}
 
-	return sqlcUserToGraphUser(user), nil
+	id := GenerateID("u")
+	if claims.UserID == id {
+		return nil, fmt.Errorf("unauthorized: you cannot modify another user")
+	}
+
+	params := generated.CreateUserParams{
+		ID:       id,
+		Name:     input.Name,
+		Email:    input.Email,
+		Password: string(hashedPassword),
+	}
+
+	if err := r.Queries.CreateUser(ctx, params); err != nil {
+		return nil, fmt.Errorf("unable to create user: %w", err)
+	}
+
+	row, err := r.Queries.GetUser(ctx, id)
+	if err != nil {
+		return nil, fmt.Errorf("unable to retrieve created user: %w", err)
+	}
+
+	return SqlcUserToGraphUser(row), nil
 }
 
-// UpdateUser is the resolver for the updateUser field.
 func (r *mutationResolver) UpdateUser(ctx context.Context, input model.UpdateUserInput) (*model.User, error) {
-	err := r.Queries.UpdateUser(ctx, generated.UpdateUserParams{
+	_, err := MustGetUser(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	params := generated.UpdateUserParams{
 		ID:    input.ID,
-		Name:  *input.Name,
-		Email: *input.Email,
-	})
-	if err != nil {
-		return nil, err
+		Name:  NewNullString(input.Name),
+		Email: NewNullString(input.Email),
 	}
 
-	user, err := r.Queries.GetUpdatedUser(ctx, input.ID)
-	if err != nil {
-		return nil, err
+	if err := r.Queries.UpdateUser(ctx, params); err != nil {
+		return nil, fmt.Errorf("unable to update user: %w", err)
 	}
 
-	return sqlcUserToGraphUser(user), nil
+	row, err := r.Queries.GetUser(ctx, input.ID)
+	if err != nil {
+		return nil, fmt.Errorf("unable to retrieve updated user: %w", err)
+	}
+
+	return SqlcUserToGraphUser(row), nil
 }
 
-// DeleteUser is the resolver for the deleteUser field.
 func (r *mutationResolver) DeleteUser(ctx context.Context, id string) (bool, error) {
-	err := r.Queries.DeleteUser(ctx, id)
+	claims, err := MustGetUser(ctx)
 	if err != nil {
 		return false, err
 	}
-	return true, nil
+
+	if claims.UserID == id {
+		return false, fmt.Errorf("unauthorized")
+	}
+
+	err = r.Queries.DeleteUser(ctx, id)
+	return err == nil, err
 }
 
-// ---------------- LOGIN ----------------
+func (r *mutationResolver) CreateTask(ctx context.Context, input model.CreateTaskInput) (*model.Task, error) {
+	if _, err := MustGetUser(ctx); err != nil {
+		return nil, err
+	}
 
-// Login is the resolver for the login field.
-func (r *mutationResolver) Login(ctx context.Context, name string, password string) (*model.Token, error) {
-	user, err := r.Queries.GetUserAuthByName(ctx, name)
+	id := GenerateID("t")
+	params := generated.CreateTaskParams{
+		ID:          id,
+		Title:       input.Title,
+		Description: NewNullString(input.Description),
+		ColumnID:    input.ColumnID,
+	}
+
+	if err := r.Queries.CreateTask(ctx, params); err != nil {
+		return nil, fmt.Errorf("unable to create task: %w", err)
+	}
+
+	if input.AssigneeIds != nil {
+		for _, userID := range input.AssigneeIds {
+			if userID != "" {
+				assignParams := generated.AddTaskAssigneeParams{
+					TaskID: id,
+					UserID: userID,
+				}
+				if err := r.Queries.AddTaskAssignee(ctx, assignParams); err != nil {
+
+					return nil, fmt.Errorf("unable to assign user %s: %w", userID, err)
+				}
+			}
+		}
+	}
+
+	row, err := r.Queries.GetTask(ctx, id)
 	if err != nil {
-		return nil, errors.New("user not found")
+		return nil, fmt.Errorf("unable to retrieve created task: %w", err)
 	}
 
-	if !utils.ComparePassword(password, user.Password) {
-		return nil, errors.New("passwords doesn't match")
+	return SqlcTaskToGraphTask(row), nil
+}
+
+func (r *mutationResolver) UpdateTask(ctx context.Context, input model.UpdateTaskInput) (*model.Task, error) {
+	if _, err := MustGetUser(ctx); err != nil {
+		return nil, err
+	}
+	fmt.Println(input)
+
+	params := generated.UpdateTaskParams{
+		ID:          input.ID,
+		Title:       NewNullString(input.Title),
+		Description: NewNullString(input.Description),
 	}
 
-	expiredAt := time.Now().Add(time.Hour * 1)
-	obj := &model.Token{
-		Token:     utils.GenerateJwt(user.ID, int64(expiredAt.Unix())),
-		ExpiredAt: scalar.Date{Time: &expiredAt},
+	if err := r.Queries.UpdateTask(ctx, params); err != nil {
+		return nil, fmt.Errorf("unable to update task: %w", err)
 	}
 
-	return obj, nil
+	if input.AssigneeIds != nil {
+
+		if err := r.Queries.ClearTaskAssigneesByTask(ctx, input.ID); err != nil {
+			return nil, fmt.Errorf("unable to clear previous assignees: %w", err)
+		}
+
+		for _, userID := range input.AssigneeIds {
+			if userID != nil {
+				assignParams := generated.AddTaskAssigneeParams{
+					TaskID: input.ID,
+					UserID: *userID,
+				}
+				if err := r.Queries.AddTaskAssignee(ctx, assignParams); err != nil {
+					return nil, fmt.Errorf("unable to assign new user %s: %w", *userID, err)
+				}
+			}
+		}
+	}
+
+	row, err := r.Queries.GetTask(ctx, input.ID)
+	if err != nil {
+		return nil, fmt.Errorf("unable to retrieve updated task: %w", err)
+	}
+
+	return SqlcTaskToGraphTask(row), nil
+}
+
+func (r *mutationResolver) MoveTask(ctx context.Context, id string, toColumnID string) (*model.Task, error) {
+	if _, err := MustGetUser(ctx); err != nil {
+		return nil, err
+	}
+
+	params := generated.MoveTaskParams{
+		ID:       id,
+		ColumnID: NewNullString(&toColumnID),
+	}
+	if err := r.Queries.MoveTask(ctx, params); err != nil {
+		return nil, fmt.Errorf("unable to move task: %w", err)
+	}
+
+	row, err := r.Queries.GetTask(ctx, id)
+	if err != nil {
+		return nil, fmt.Errorf("unable to retrieve moved task: %w", err)
+	}
+
+	return SqlcTaskToGraphTask(row), nil
+}
+
+func (r *mutationResolver) DeleteTask(ctx context.Context, id string) (bool, error) {
+	if _, err := MustGetUser(ctx); err != nil {
+		return false, err
+	}
+
+	err := r.Queries.DeleteTask(ctx, id)
+	return err == nil, err
+}
+
+func (r *mutationResolver) AddComment(ctx context.Context, taskID string, content string) (*model.Comment, error) {
+	claims, err := MustGetUser(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	id := GenerateID("cm")
+	params := generated.CreateCommentParams{
+		ID:       id,
+		Content:  content,
+		AuthorID: claims.UserID,
+		TaskID:   taskID,
+	}
+
+	if err := r.Queries.CreateComment(ctx, params); err != nil {
+		return nil, fmt.Errorf("unable to add comment: %w", err)
+	}
+
+	row, err := r.Queries.GetComment(ctx, id)
+	if err != nil {
+		return nil, fmt.Errorf("unable to retrieve created comment: %w", err)
+	}
+
+	return SqlcCommentToGraphComment(row), nil
+}
+
+func (r *mutationResolver) DeleteComment(ctx context.Context, id string) (bool, error) {
+	claims, err := MustGetUser(ctx)
+	if err != nil {
+		return false, err
+	}
+
+	authorID, err := r.Queries.GetCommentAuthor(ctx, id)
+	if err != nil {
+		return false, fmt.Errorf("comment not found: %w", err)
+	}
+
+	if claims.UserID != authorID {
+
+		return false, fmt.Errorf("unauthorized: you are not the author")
+	}
+
+	err = r.Queries.DeleteComment(ctx, id)
+	return err == nil, err
+}
+
+func (r *mutationResolver) Login(ctx context.Context, email string, password string) (*model.Token, error) {
+	row, err := r.Queries.GetUserByEmail(ctx, email)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return nil, fmt.Errorf("incorrect email or password")
+		}
+
+		return nil, fmt.Errorf("database error: %w", err)
+	}
+
+	if !utils.ComparePassword(password, row.Password) {
+		return nil, fmt.Errorf("incorrect email or password")
+	}
+
+	expirationTime := time.Now().Add(24 * time.Hour)
+	tokenString := utils.GenerateJwt(row.ID, expirationTime.Unix())
+
+	return &model.Token{
+		Token:     tokenString,
+		ExpiredAt: scalar.Date{Time: &expirationTime},
+	}, nil
 }

@@ -9,16 +9,55 @@ import (
 )
 
 type Querier interface {
-	// queries/sql/mutationsUsers.sql
+	AddTaskAssignee(ctx context.Context, arg AddTaskAssigneeParams) error
+	ClearTaskAssigneesByTask(ctx context.Context, taskID string) error
+	ClearTaskAssigneesByUser(ctx context.Context, userID string) error
+	CreateBoard(ctx context.Context, arg CreateBoardParams) error
+	CreateColumn(ctx context.Context, arg CreateColumnParams) error
+	CreateComment(ctx context.Context, arg CreateCommentParams) error
+	CreateTask(ctx context.Context, arg CreateTaskParams) error
 	CreateUser(ctx context.Context, arg CreateUserParams) error
+	DeleteBoard(ctx context.Context, id string) error
+	DeleteColumn(ctx context.Context, id string) error
+	DeleteComment(ctx context.Context, id string) error
+	DeleteTask(ctx context.Context, id string) error
+	DeleteTaskAssignee(ctx context.Context, arg DeleteTaskAssigneeParams) error
 	DeleteUser(ctx context.Context, id string) error
+	GetBoard(ctx context.Context, id string) (Board, error)
+	GetBoardForColumn(ctx context.Context, id string) (Board, error)
+	GetColumn(ctx context.Context, id string) (Column, error)
+	GetColumnForTask(ctx context.Context, id string) (Column, error)
+	GetComment(ctx context.Context, id string) (Comment, error)
+	GetCommentAuthor(ctx context.Context, id string) (string, error)
+	GetCommentForTask(ctx context.Context, taskID string) (Comment, error)
+	GetCreatedBoard(ctx context.Context) (Board, error)
+	GetCreatedColumn(ctx context.Context) (Column, error)
+	GetCreatedComment(ctx context.Context) (Comment, error)
+	GetCreatedTask(ctx context.Context) (Task, error)
 	GetCreatedUser(ctx context.Context) (User, error)
-	GetUpdatedUser(ctx context.Context, id string) (User, error)
-	GetUserAuthByName(ctx context.Context, name string) (GetUserAuthByNameRow, error)
-	GetUserByID(ctx context.Context, id string) (GetUserByIDRow, error)
-	// queries/sql/users.sql
-	ListUsers(ctx context.Context) ([]ListUsersRow, error)
-	SearchUsersByName(ctx context.Context, lower string) ([]SearchUsersByNameRow, error)
+	GetTask(ctx context.Context, id string) (Task, error)
+	GetTaskAssignee(ctx context.Context, arg GetTaskAssigneeParams) (TaskAssignee, error)
+	GetTaskForComment(ctx context.Context, id string) (Task, error)
+	GetUser(ctx context.Context, id string) (User, error)
+	GetUserByEmail(ctx context.Context, email string) (User, error)
+	GetUserForComment(ctx context.Context, id string) (User, error)
+	ListAssigneesByTask(ctx context.Context, taskID string) ([]User, error)
+	ListBoards(ctx context.Context) ([]Board, error)
+	ListColumns(ctx context.Context) ([]Column, error)
+	ListColumnsByBoard(ctx context.Context, boardID string) ([]Column, error)
+	ListComments(ctx context.Context) ([]Comment, error)
+	ListCommentsByTask(ctx context.Context, taskID string) ([]Comment, error)
+	ListTaskAssignsByTask(ctx context.Context, taskID string) ([]TaskAssignee, error)
+	ListTaskAssignsByUser(ctx context.Context, userID string) ([]TaskAssignee, error)
+	ListTasks(ctx context.Context) ([]Task, error)
+	ListTasksForColumnPaginated(ctx context.Context, arg ListTasksForColumnPaginatedParams) ([]Task, error)
+	ListUsers(ctx context.Context) ([]User, error)
+	MoveTask(ctx context.Context, arg MoveTaskParams) error
+	SearchUsers(ctx context.Context, arg SearchUsersParams) ([]User, error)
+	UpdateBoard(ctx context.Context, arg UpdateBoardParams) error
+	UpdateColumn(ctx context.Context, arg UpdateColumnParams) error
+	UpdateComment(ctx context.Context, arg UpdateCommentParams) error
+	UpdateTask(ctx context.Context, arg UpdateTaskParams) error
 	UpdateUser(ctx context.Context, arg UpdateUserParams) error
 }
 

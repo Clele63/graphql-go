@@ -1,0 +1,6 @@
+type Subscription {
+  taskCreated(boardId: ID!): Task!
+  taskUpdated(boardId: ID!): Task!
+  taskMoved(boardId: ID!): Task!
+  commentAdded(taskId: ID!): Comment!
+}

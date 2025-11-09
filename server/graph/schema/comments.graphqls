@@ -1,0 +1,7 @@
+type Comment implements Node @goModel(model: "workbench/graphql-app/graph/model.Comment") {
+  id: ID!
+  content: String!
+  author: User! @goField(forceResolver: true)
+  task: Task! @goField(forceResolver: true)
+  createdAt: Date! @goField(forceResolver: true)
+}

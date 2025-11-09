@@ -2,14 +2,19 @@ type User implements Node @goModel(model: "workbench/graphql-app/graph/model.Use
   id: ID!
   name: String!
   email: String!
-  creationDate: Date!
+  avatar: String! @goField(forceResolver: true)
+  createdAt: Date! @goField(forceResolver: true)
+}
+
+type Token @goModel(model: "workbench/graphql-app/graph/model.Token"){
+  token: String!
+  expired_at: Date!
 }
 
 input CreateUserInput {
   name: String!
   password: String!
   email: String!
-  creation_date: Date!
 }
 
 input UpdateUserInput {

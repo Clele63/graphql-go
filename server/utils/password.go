@@ -10,12 +10,23 @@ func HashPassword(password string) (string, error) {
 	return string(pass), err
 }
 
-// ComparePassword compare password with hash
+// HashPasswordList hashes each password in the list
+func HashPasswordList(passwords []string) ([]string, error) {
+	hashes := make([]string, len(passwords))
+
+	for i, p := range passwords {
+		h, err := HashPassword(p)
+		if err != nil {
+			return nil, err
+		}
+		hashes[i] = h
+	}
+
+	return hashes, nil
+}
+
+// ComparePassword returns true if password matches hash
 func ComparePassword(password string, hash string) bool {
-	byteHash := []byte(hash)
-	bytePassword := []byte(password)
-
-	err := bcrypt.CompareHashAndPassword(byteHash, bytePassword)
-
-	return err != nil
+	err := bcrypt.CompareHashAndPassword([]byte(hash), []byte(password))
+	return err == nil
 }

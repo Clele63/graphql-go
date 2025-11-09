@@ -30,10 +30,12 @@ Contient la logique de connexion principale.
 
 Gère l'exécution des fichiers SQL de configuration.
 
-* **`ExecSchema(DB *sql.DB)`**
+* **`ExecSchema(DB *sql.DB)`** 
     Appelle `loadSchema()` et exécute le SQL retourné sur la BDD.
 * **`ExecMock(DB *sql.DB)`**
     Appelle `loadMock()` et exécute le SQL retourné (pour les données de test).
+
+Décommenter ces méthodes pour la création de la base de données 
 
 ## `connect/loadSql.go` (Tag: `!embed`)
 

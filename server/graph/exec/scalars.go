@@ -50,4 +50,20 @@ func (ec *executionContext) marshalNDate2workbenchᚋgraphqlᚑappᚋgraphᚋres
 	return v
 }
 
+func (ec *executionContext) unmarshalNDate2ᚖworkbenchᚋgraphqlᚑappᚋgraphᚋresolverᚋscalarᚐDate(ctx context.Context, v any) (*scalar.Date, error) {
+	var res = new(scalar.Date)
+	err := res.UnmarshalGQL(v)
+	return res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) marshalNDate2ᚖworkbenchᚋgraphqlᚑappᚋgraphᚋresolverᚋscalarᚐDate(ctx context.Context, sel ast.SelectionSet, v *scalar.Date) graphql.Marshaler {
+	if v == nil {
+		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
+			ec.Errorf(ctx, "the requested element is null which the schema does not allow")
+		}
+		return graphql.Null
+	}
+	return v
+}
+
 // endregion ***************************** type.gotpl *****************************

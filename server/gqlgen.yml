@@ -8,19 +8,15 @@ exec:
 model:
   filename: graph/model/models_gen.go
   package: model
-  # Optional: Pass in a path to a new gotpl template to use for generating the models
-  # model_template: [your/path/model.gotpl]
 resolver:
   package: resolver
   layout: follow-schema
   dir: graph/resolver
   filename_template: "{name}.resolvers.go"
-  # Optional: Pass in a path to a new gotpl template to use for generating resolvers
-  # resolver_template: [your/path/resolver.gotpl]
   preserve_resolver: true
 
 struct_tag: json
-
+omit_slice_element_pointers: true
 autobind:
  - "workbench/graphql-app"
 

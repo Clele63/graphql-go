@@ -1,1 +1,3 @@
 *__debug_*
+node_modules/
+.DS_Store

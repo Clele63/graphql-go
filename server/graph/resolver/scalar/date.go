@@ -17,7 +17,7 @@ type Date struct {
 // allowing the type to be marshaled by gqlgen and sent over the wire.
 // This will convert the string as a time.Time string.
 func (d Date) MarshalGQL(w io.Writer) {
-	if d.IsZero() {
+	if d.Time == nil || d.Time.IsZero() {
 		io.WriteString(w, "null")
 		return
 	}
@@ -29,13 +29,11 @@ func (d Date) MarshalGQL(w io.Writer) {
 // The input is expected to be a base64-encoded string, which will be decoded
 // into the byte slice.
 func (d *Date) UnmarshalGQL(v interface{}) error {
-	// Expect that the incoming value is a string.
 	str, ok := v.(string)
 	if !ok {
 		return fmt.Errorf("Date must be a RFC3339 formatted string")
 	}
 
-	// Convert the string into time.Time
 	t, err := time.Parse(time.RFC3339, str)
 	if err != nil {
 		return fmt.Errorf("Date could not be parsed: %w", err)

@@ -18,7 +18,6 @@ import (
 var DB *sql.DB
 var Queries *wrapper.WrappedQueries
 
-// InitDB opens the connection, ensures the database exists, runs the schema and inits sqlc Queries.
 func InitDB() {
 	user := os.Getenv("DB_USERNAME")
 	pass := os.Getenv("DB_PASSWORD")
@@ -30,7 +29,6 @@ func InitDB() {
 		log.Fatal("Database env vars not set. Set DB_USERNAME, DB_PASSWORD, DB_DATABASE, DB_HOST, DB_PORT")
 	}
 
-	// First connect without specifying DB to ensure it exists
 	dsnNoDB := fmt.Sprintf("%s:%s@tcp(%s:%s)/?parseTime=true&multiStatements=true", user, pass, host, port)
 	tmpDB, err := sql.Open("mysql", dsnNoDB)
 	if err != nil {
@@ -39,21 +37,19 @@ func InitDB() {
 	if err := tmpDB.Ping(); err != nil {
 		log.Fatalf("failed to ping mysql (no db): %v", err)
 	}
-	// Create database if missing
+
 	_, err = tmpDB.Exec(fmt.Sprintf("CREATE DATABASE IF NOT EXISTS `%s` CHARACTER SET = utf8mb4 COLLATE = utf8mb4_unicode_ci;", name))
 	if err != nil {
 		log.Fatalf("failed to create database: %v", err)
 	}
 	_ = tmpDB.Close()
 
-	// Now open real connection to the database
 	dsn := fmt.Sprintf("%s:%s@tcp(%s:%s)/%s?parseTime=true&multiStatements=true", user, pass, host, port, name)
 	DB, err = sql.Open("mysql", dsn)
 	if err != nil {
 		log.Fatalf("failed to open mysql: %v", err)
 	}
 
-	// connection pool tuning (adjust as needed)
 	DB.SetConnMaxLifetime(5 * time.Minute)
 	DB.SetMaxOpenConns(25)
 	DB.SetMaxIdleConns(5)
@@ -62,10 +58,9 @@ func InitDB() {
 		log.Fatalf("failed to ping mysql (db): %v", err)
 	}
 
-	ExecSchema(DB)
-	// ExecMock(DB) //Add it to if you want to mock the database with the mock.sql file
+	// ExecSchema(DB)
+	// ExecMock(DB)
 
-	// Initialize sqlc generated queries
 	baseQueries := generated.New(DB)
 	Queries = queries.InitWrappedQueries(baseQueries)
 

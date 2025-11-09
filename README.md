@@ -33,12 +33,23 @@ Voici une arborescence de projet corrigée et complétée, basée sur l'ensemble
 │   ├── .dockerignore
 │   ├── Dockerfile
 │   └── devcontainer.json
+│
 ├── .vscode/              # Paramètres de l'éditeur VSCode
 │   ├── launch.json
 │   └── settings.json
-├── client/               # Application Frontend (inféré du Dockerfile)
+│
+├── client/               # Application React
 │   ├── build/            # Output du build, servi par server.go
-│   └── ...               # Autres fichiers: package.json, src/, ...
+│   └── src/
+│       ├── apollo.js       # Configuration Apollo Client
+│       ├── pages/
+│       │   └── Board.jsx   # Page principale du board
+│       └── components/
+│           ├── Column.jsx          # Colonne de tâches
+│           ├── TaskCard.jsx        # Carte de tâche
+│           ├── TaskModal.jsx       # Modal d'édition
+│           └── CommentSection.jsx  # Section commentaires
+│
 ├── server/               # Application Backend Go
 │   ├── docs/                 # Documentation technique
 │   │   ├── server.md
@@ -81,10 +92,13 @@ Voici une arborescence de projet corrigée et complétée, basée sur l'ensemble
 │   ├── gqlgen.yml
 │   ├── server.go         # Point d'entrée du serveur (routes chi)
 │   └── sqlc.yml
+│
 ├── .gitignore
 ├── Dockerfile            # Dockerfile multi-stage (build client + build serveur)
 ├── docker-compose.yml    # Orchestre l'application et la BDD MySQL
+├── CONSIGNES.md           # Consignes détaillées de l'évaluation
 └── README.md             # Ce fichier
+
 ```
 
 ## ⚙️ Installation et Lancement

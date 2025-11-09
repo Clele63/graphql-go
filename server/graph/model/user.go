@@ -5,10 +5,11 @@ import (
 )
 
 type User struct {
-	ID           string      `json:"id" gorm:"primary_key"`
-	Name         string      `json:"name"`
-	Email        string      `json:"email"`
-	CreationDate scalar.Date `json:"creation_date"`
+	ID        string      `json:"id" gorm:"primary_key"`
+	Name      string      `json:"name"`
+	Email     string      `json:"email"`
+	Avatar    *string     `json:"avatar,omitempty"`
+	CreatedAt scalar.Date `json:"created_at"`
 }
 
 func (User) IsNode()         {}

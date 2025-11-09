@@ -1,0 +1,6 @@
+type Column implements Node @goModel(model: "workbench/graphql-app/graph/model.Column") {
+  id: ID!
+  name: String!
+  order: Int!
+  tasks(first: Int, after: String): TaskConnection! @goField(forceResolver: true)
+}

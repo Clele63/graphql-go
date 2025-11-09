@@ -33,24 +33,93 @@ type Config struct {
 }
 
 type ResolverRoot interface {
+	Board() BoardResolver
+	Column() ColumnResolver
+	Comment() CommentResolver
 	Mutation() MutationResolver
 	Query() QueryResolver
+	Subscription() SubscriptionResolver
+	Task() TaskResolver
+	User() UserResolver
 }
 
 type DirectiveRoot struct {
 }
 
 type ComplexityRoot struct {
+	Board struct {
+		Columns func(childComplexity int) int
+		ID      func(childComplexity int) int
+		Name    func(childComplexity int) int
+	}
+
+	Column struct {
+		ID    func(childComplexity int) int
+		Name  func(childComplexity int) int
+		Order func(childComplexity int) int
+		Tasks func(childComplexity int, first *int32, after *string) int
+	}
+
+	Comment struct {
+		Author    func(childComplexity int) int
+		Content   func(childComplexity int) int
+		CreatedAt func(childComplexity int) int
+		ID        func(childComplexity int) int
+		Task      func(childComplexity int) int
+	}
+
 	Mutation struct {
-		CreateUser func(childComplexity int, input model.CreateUserInput) int
-		DeleteUser func(childComplexity int, id string) int
-		Login      func(childComplexity int, name string, password string) int
-		UpdateUser func(childComplexity int, input model.UpdateUserInput) int
+		AddComment    func(childComplexity int, taskID string, content string) int
+		CreateTask    func(childComplexity int, input model.CreateTaskInput) int
+		CreateUser    func(childComplexity int, input model.CreateUserInput) int
+		DeleteComment func(childComplexity int, id string) int
+		DeleteTask    func(childComplexity int, id string) int
+		DeleteUser    func(childComplexity int, id string) int
+		Login         func(childComplexity int, email string, password string) int
+		MoveTask      func(childComplexity int, id string, toColumnID string) int
+		UpdateTask    func(childComplexity int, input model.UpdateTaskInput) int
+		UpdateUser    func(childComplexity int, input model.UpdateUserInput) int
+	}
+
+	PageInfo struct {
+		EndCursor   func(childComplexity int) int
+		HasNextPage func(childComplexity int) int
 	}
 
 	Query struct {
+		Board  func(childComplexity int) int
+		Column func(childComplexity int, id string) int
+		Me     func(childComplexity int) int
 		Search func(childComplexity int, term string) int
 		Users  func(childComplexity int) int
+	}
+
+	Subscription struct {
+		CommentAdded func(childComplexity int, taskID string) int
+		TaskCreated  func(childComplexity int, boardID string) int
+		TaskMoved    func(childComplexity int, boardID string) int
+		TaskUpdated  func(childComplexity int, boardID string) int
+	}
+
+	Task struct {
+		Assignees   func(childComplexity int) int
+		Column      func(childComplexity int) int
+		Comments    func(childComplexity int) int
+		CreatedAt   func(childComplexity int) int
+		Description func(childComplexity int) int
+		ID          func(childComplexity int) int
+		Status      func(childComplexity int) int
+		Title       func(childComplexity int) int
+	}
+
+	TaskConnection struct {
+		Edges    func(childComplexity int) int
+		PageInfo func(childComplexity int) int
+	}
+
+	TaskEdge struct {
+		Cursor func(childComplexity int) int
+		Node   func(childComplexity int) int
 	}
 
 	Token struct {
@@ -59,10 +128,11 @@ type ComplexityRoot struct {
 	}
 
 	User struct {
-		CreationDate func(childComplexity int) int
-		Email        func(childComplexity int) int
-		ID           func(childComplexity int) int
-		Name         func(childComplexity int) int
+		Avatar    func(childComplexity int) int
+		CreatedAt func(childComplexity int) int
+		Email     func(childComplexity int) int
+		ID        func(childComplexity int) int
+		Name      func(childComplexity int) int
 	}
 }
 
@@ -85,6 +155,119 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 	_ = ec
 	switch typeName + "." + field {
 
+	case "Board.columns":
+		if e.complexity.Board.Columns == nil {
+			break
+		}
+
+		return e.complexity.Board.Columns(childComplexity), true
+
+	case "Board.id":
+		if e.complexity.Board.ID == nil {
+			break
+		}
+
+		return e.complexity.Board.ID(childComplexity), true
+
+	case "Board.name":
+		if e.complexity.Board.Name == nil {
+			break
+		}
+
+		return e.complexity.Board.Name(childComplexity), true
+
+	case "Column.id":
+		if e.complexity.Column.ID == nil {
+			break
+		}
+
+		return e.complexity.Column.ID(childComplexity), true
+
+	case "Column.name":
+		if e.complexity.Column.Name == nil {
+			break
+		}
+
+		return e.complexity.Column.Name(childComplexity), true
+
+	case "Column.order":
+		if e.complexity.Column.Order == nil {
+			break
+		}
+
+		return e.complexity.Column.Order(childComplexity), true
+
+	case "Column.tasks":
+		if e.complexity.Column.Tasks == nil {
+			break
+		}
+
+		args, err := ec.field_Column_tasks_args(ctx, rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Column.Tasks(childComplexity, args["first"].(*int32), args["after"].(*string)), true
+
+	case "Comment.author":
+		if e.complexity.Comment.Author == nil {
+			break
+		}
+
+		return e.complexity.Comment.Author(childComplexity), true
+
+	case "Comment.content":
+		if e.complexity.Comment.Content == nil {
+			break
+		}
+
+		return e.complexity.Comment.Content(childComplexity), true
+
+	case "Comment.createdAt":
+		if e.complexity.Comment.CreatedAt == nil {
+			break
+		}
+
+		return e.complexity.Comment.CreatedAt(childComplexity), true
+
+	case "Comment.id":
+		if e.complexity.Comment.ID == nil {
+			break
+		}
+
+		return e.complexity.Comment.ID(childComplexity), true
+
+	case "Comment.task":
+		if e.complexity.Comment.Task == nil {
+			break
+		}
+
+		return e.complexity.Comment.Task(childComplexity), true
+
+	case "Mutation.addComment":
+		if e.complexity.Mutation.AddComment == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_addComment_args(ctx, rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Mutation.AddComment(childComplexity, args["taskId"].(string), args["content"].(string)), true
+
+	case "Mutation.createTask":
+		if e.complexity.Mutation.CreateTask == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_createTask_args(ctx, rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Mutation.CreateTask(childComplexity, args["input"].(model.CreateTaskInput)), true
+
 	case "Mutation.createUser":
 		if e.complexity.Mutation.CreateUser == nil {
 			break
@@ -96,6 +279,30 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 		}
 
 		return e.complexity.Mutation.CreateUser(childComplexity, args["input"].(model.CreateUserInput)), true
+
+	case "Mutation.deleteComment":
+		if e.complexity.Mutation.DeleteComment == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_deleteComment_args(ctx, rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Mutation.DeleteComment(childComplexity, args["id"].(string)), true
+
+	case "Mutation.deleteTask":
+		if e.complexity.Mutation.DeleteTask == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_deleteTask_args(ctx, rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Mutation.DeleteTask(childComplexity, args["id"].(string)), true
 
 	case "Mutation.deleteUser":
 		if e.complexity.Mutation.DeleteUser == nil {
@@ -119,7 +326,31 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 			return 0, false
 		}
 
-		return e.complexity.Mutation.Login(childComplexity, args["name"].(string), args["password"].(string)), true
+		return e.complexity.Mutation.Login(childComplexity, args["email"].(string), args["password"].(string)), true
+
+	case "Mutation.moveTask":
+		if e.complexity.Mutation.MoveTask == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_moveTask_args(ctx, rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Mutation.MoveTask(childComplexity, args["id"].(string), args["toColumnId"].(string)), true
+
+	case "Mutation.updateTask":
+		if e.complexity.Mutation.UpdateTask == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_updateTask_args(ctx, rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Mutation.UpdateTask(childComplexity, args["input"].(model.UpdateTaskInput)), true
 
 	case "Mutation.updateUser":
 		if e.complexity.Mutation.UpdateUser == nil {
@@ -132,6 +363,46 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 		}
 
 		return e.complexity.Mutation.UpdateUser(childComplexity, args["input"].(model.UpdateUserInput)), true
+
+	case "PageInfo.endCursor":
+		if e.complexity.PageInfo.EndCursor == nil {
+			break
+		}
+
+		return e.complexity.PageInfo.EndCursor(childComplexity), true
+
+	case "PageInfo.hasNextPage":
+		if e.complexity.PageInfo.HasNextPage == nil {
+			break
+		}
+
+		return e.complexity.PageInfo.HasNextPage(childComplexity), true
+
+	case "Query.board":
+		if e.complexity.Query.Board == nil {
+			break
+		}
+
+		return e.complexity.Query.Board(childComplexity), true
+
+	case "Query.column":
+		if e.complexity.Query.Column == nil {
+			break
+		}
+
+		args, err := ec.field_Query_column_args(ctx, rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Query.Column(childComplexity, args["id"].(string)), true
+
+	case "Query.me":
+		if e.complexity.Query.Me == nil {
+			break
+		}
+
+		return e.complexity.Query.Me(childComplexity), true
 
 	case "Query.search":
 		if e.complexity.Query.Search == nil {
@@ -152,6 +423,138 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 
 		return e.complexity.Query.Users(childComplexity), true
 
+	case "Subscription.commentAdded":
+		if e.complexity.Subscription.CommentAdded == nil {
+			break
+		}
+
+		args, err := ec.field_Subscription_commentAdded_args(ctx, rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Subscription.CommentAdded(childComplexity, args["taskId"].(string)), true
+
+	case "Subscription.taskCreated":
+		if e.complexity.Subscription.TaskCreated == nil {
+			break
+		}
+
+		args, err := ec.field_Subscription_taskCreated_args(ctx, rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Subscription.TaskCreated(childComplexity, args["boardId"].(string)), true
+
+	case "Subscription.taskMoved":
+		if e.complexity.Subscription.TaskMoved == nil {
+			break
+		}
+
+		args, err := ec.field_Subscription_taskMoved_args(ctx, rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Subscription.TaskMoved(childComplexity, args["boardId"].(string)), true
+
+	case "Subscription.taskUpdated":
+		if e.complexity.Subscription.TaskUpdated == nil {
+			break
+		}
+
+		args, err := ec.field_Subscription_taskUpdated_args(ctx, rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Subscription.TaskUpdated(childComplexity, args["boardId"].(string)), true
+
+	case "Task.assignees":
+		if e.complexity.Task.Assignees == nil {
+			break
+		}
+
+		return e.complexity.Task.Assignees(childComplexity), true
+
+	case "Task.column":
+		if e.complexity.Task.Column == nil {
+			break
+		}
+
+		return e.complexity.Task.Column(childComplexity), true
+
+	case "Task.comments":
+		if e.complexity.Task.Comments == nil {
+			break
+		}
+
+		return e.complexity.Task.Comments(childComplexity), true
+
+	case "Task.createdAt":
+		if e.complexity.Task.CreatedAt == nil {
+			break
+		}
+
+		return e.complexity.Task.CreatedAt(childComplexity), true
+
+	case "Task.description":
+		if e.complexity.Task.Description == nil {
+			break
+		}
+
+		return e.complexity.Task.Description(childComplexity), true
+
+	case "Task.id":
+		if e.complexity.Task.ID == nil {
+			break
+		}
+
+		return e.complexity.Task.ID(childComplexity), true
+
+	case "Task.status":
+		if e.complexity.Task.Status == nil {
+			break
+		}
+
+		return e.complexity.Task.Status(childComplexity), true
+
+	case "Task.title":
+		if e.complexity.Task.Title == nil {
+			break
+		}
+
+		return e.complexity.Task.Title(childComplexity), true
+
+	case "TaskConnection.edges":
+		if e.complexity.TaskConnection.Edges == nil {
+			break
+		}
+
+		return e.complexity.TaskConnection.Edges(childComplexity), true
+
+	case "TaskConnection.pageInfo":
+		if e.complexity.TaskConnection.PageInfo == nil {
+			break
+		}
+
+		return e.complexity.TaskConnection.PageInfo(childComplexity), true
+
+	case "TaskEdge.cursor":
+		if e.complexity.TaskEdge.Cursor == nil {
+			break
+		}
+
+		return e.complexity.TaskEdge.Cursor(childComplexity), true
+
+	case "TaskEdge.node":
+		if e.complexity.TaskEdge.Node == nil {
+			break
+		}
+
+		return e.complexity.TaskEdge.Node(childComplexity), true
+
 	case "Token.expired_at":
 		if e.complexity.Token.ExpiredAt == nil {
 			break
@@ -166,12 +569,19 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 
 		return e.complexity.Token.Token(childComplexity), true
 
-	case "User.creationDate":
-		if e.complexity.User.CreationDate == nil {
+	case "User.avatar":
+		if e.complexity.User.Avatar == nil {
 			break
 		}
 
-		return e.complexity.User.CreationDate(childComplexity), true
+		return e.complexity.User.Avatar(childComplexity), true
+
+	case "User.createdAt":
+		if e.complexity.User.CreatedAt == nil {
+			break
+		}
+
+		return e.complexity.User.CreatedAt(childComplexity), true
 
 	case "User.email":
 		if e.complexity.User.Email == nil {
@@ -202,7 +612,9 @@ func (e *executableSchema) Exec(ctx context.Context) graphql.ResponseHandler {
 	opCtx := graphql.GetOperationContext(ctx)
 	ec := executionContext{opCtx, e, 0, 0, make(chan graphql.DeferredResult)}
 	inputUnmarshalMap := graphql.BuildUnmarshalerMap(
+		ec.unmarshalInputCreateTaskInput,
 		ec.unmarshalInputCreateUserInput,
+		ec.unmarshalInputUpdateTaskInput,
 		ec.unmarshalInputUpdateUserInput,
 	)
 	first := true
@@ -247,6 +659,23 @@ func (e *executableSchema) Exec(ctx context.Context) graphql.ResponseHandler {
 			ctx = graphql.WithUnmarshalerMap(ctx, inputUnmarshalMap)
 			data := ec._Mutation(ctx, opCtx.Operation.SelectionSet)
 			var buf bytes.Buffer
+			data.MarshalGQL(&buf)
+
+			return &graphql.Response{
+				Data: buf.Bytes(),
+			}
+		}
+	case ast.Subscription:
+		next := ec._Subscription(ctx, opCtx.Operation.SelectionSet)
+
+		var buf bytes.Buffer
+		return func(ctx context.Context) *graphql.Response {
+			buf.Reset()
+			data := next(ctx)
+
+			if data == nil {
+				return nil
+			}
 			data.MarshalGQL(&buf)
 
 			return &graphql.Response{
@@ -301,6 +730,24 @@ func (ec *executionContext) introspectType(name string) (*introspection.Type, er
 }
 
 var sources = []*ast.Source{
+	{Name: "../schema/boards.graphqls", Input: `type Board implements Node @goModel(model: "workbench/graphql-app/graph/model.Board") {
+  id: ID!
+  name: String!
+  columns: [Column!]! @goField(forceResolver: true)
+}`, BuiltIn: false},
+	{Name: "../schema/columns.graphqls", Input: `type Column implements Node @goModel(model: "workbench/graphql-app/graph/model.Column") {
+  id: ID!
+  name: String!
+  order: Int!
+  tasks(first: Int, after: String): TaskConnection! @goField(forceResolver: true)
+}`, BuiltIn: false},
+	{Name: "../schema/comments.graphqls", Input: `type Comment implements Node @goModel(model: "workbench/graphql-app/graph/model.Comment") {
+  id: ID!
+  content: String!
+  author: User! @goField(forceResolver: true)
+  task: Task! @goField(forceResolver: true)
+  createdAt: Date! @goField(forceResolver: true)
+}`, BuiltIn: false},
 	{Name: "../schema/common.graphqls", Input: `interface Node {
   id: ID!
 }
@@ -330,41 +777,98 @@ directive @goExtraField(
 	description: String
 ) repeatable on OBJECT | INPUT_OBJECT
 `, BuiltIn: false},
-	{Name: "../schema/enum.graphqls", Input: `# Enum for {tables}.graphqls`, BuiltIn: false},
 	{Name: "../schema/mutations.graphqls", Input: `type Mutation {
-  # Users CRUD
+  # Users
   createUser(input: CreateUserInput!): User!
   updateUser(input: UpdateUserInput!): User!
   deleteUser(id: ID!): Boolean!
 
+  # Tasks
+  createTask(input: CreateTaskInput!): Task!
+  updateTask(input: UpdateTaskInput!): Task!
+  moveTask(id: ID!, toColumnId: ID!): Task!
+  deleteTask(id: ID!): Boolean!
+
+  # Comments
+  addComment(taskId: ID!, content: String!): Comment!
+  deleteComment(id: ID!): Boolean!
+  
   # Login
-  login(name: String!, password: String!): Token!
+  login(email: String!, password: String!): Token!
+}
+`, BuiltIn: false},
+	{Name: "../schema/pageInfos.graphqls", Input: `type PageInfo @goModel(model: "workbench/graphql-app/graph/model.PageInfo") {
+  endCursor: String
+  hasNextPage: Boolean!
 }`, BuiltIn: false},
 	{Name: "../schema/query.graphqls", Input: `union SearchResult = User
 
 type Query {
+  me: User
+  board: Board!
+  column(id: ID!): Column
   users: [User!]!
   search(term: String!): [SearchResult!]!
-}
-`, BuiltIn: false},
+}`, BuiltIn: false},
 	{Name: "../schema/scalars.graphqls", Input: `scalar Date`, BuiltIn: false},
-	{Name: "../schema/token.graphqls", Input: `type Token @goModel(model: "workbench/graphql-app/graph/model.Token"){
-  token: String!
-  expired_at: Date!
+	{Name: "../schema/subscriptions.graphqls", Input: `type Subscription {
+  taskCreated(boardId: ID!): Task!
+  taskUpdated(boardId: ID!): Task!
+  taskMoved(boardId: ID!): Task!
+  commentAdded(taskId: ID!): Comment!
 }
 `, BuiltIn: false},
+	{Name: "../schema/tasks.graphqls", Input: `type Task implements Node @goModel(model: "workbench/graphql-app/graph/model.Task") {
+  id: ID!
+  title: String!
+  description: String
+  status: String! @goField(forceResolver: true)
+  assignees: [User!]! @goField(forceResolver: true)
+  column: Column! @goField(forceResolver: true)
+  comments: [Comment!]! @goField(forceResolver: true)
+  createdAt: Date!  @goField(forceResolver: true)
+}
+
+type TaskEdge @goModel(model: "workbench/graphql-app/graph/model.TaskEdge") {
+  cursor: String!
+  node: Task!
+}
+
+type TaskConnection @goModel(model: "workbench/graphql-app/graph/model.TaskConnection") {
+  edges: [TaskEdge!]!
+  pageInfo: PageInfo!
+}
+
+input CreateTaskInput {
+  title: String!
+  description: String
+  assigneeIds: [ID!]
+  columnId: ID!
+}
+
+input UpdateTaskInput {
+  id: ID!
+  title: String
+  description: String
+  assigneeIds: [ID]
+}`, BuiltIn: false},
 	{Name: "../schema/users.graphqls", Input: `type User implements Node @goModel(model: "workbench/graphql-app/graph/model.User") {
   id: ID!
   name: String!
   email: String!
-  creationDate: Date!
+  avatar: String! @goField(forceResolver: true)
+  createdAt: Date! @goField(forceResolver: true)
+}
+
+type Token @goModel(model: "workbench/graphql-app/graph/model.Token"){
+  token: String!
+  expired_at: Date!
 }
 
 input CreateUserInput {
   name: String!
   password: String!
   email: String!
-  creation_date: Date!
 }
 
 input UpdateUserInput {

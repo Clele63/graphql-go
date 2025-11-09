@@ -1,9 +1,15 @@
 type Mutation {
-  # Users CRUD
   createUser(input: CreateUserInput!): User!
   updateUser(input: UpdateUserInput!): User!
   deleteUser(id: ID!): Boolean!
 
-  # Login
-  login(name: String!, password: String!): Token!
+  createTask(input: CreateTaskInput!): Task!
+  updateTask(input: UpdateTaskInput!): Task!
+  moveTask(id: ID!, toColumnId: ID!): Task!
+  deleteTask(id: ID!): Boolean!
+
+  addComment(taskId: ID!, content: String!): Comment!
+  deleteComment(id: ID!): Boolean!
+
+  login(email: String!, password: String!): Token!
 }

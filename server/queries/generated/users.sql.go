@@ -7,77 +7,137 @@ package generated
 
 import (
 	"context"
-
-	"workbench/graphql-app/graph/resolver/scalar"
+	"database/sql"
 )
 
-const getUserAuthByName = `-- name: GetUserAuthByName :one
-SELECT id, name, password FROM users WHERE name = ?
+const createUser = `-- name: CreateUser :exec
+INSERT INTO users (id, name, email, password, avatar)
+VALUES (?, ?, ?, ?, NULL)
 `
 
-type GetUserAuthByNameRow struct {
+type CreateUserParams struct {
 	ID       string
 	Name     string
+	Email    string
 	Password string
 }
 
-func (q *Queries) GetUserAuthByName(ctx context.Context, name string) (GetUserAuthByNameRow, error) {
-	row := q.db.QueryRowContext(ctx, getUserAuthByName, name)
-	var i GetUserAuthByNameRow
-	err := row.Scan(&i.ID, &i.Name, &i.Password)
-	return i, err
+func (q *Queries) CreateUser(ctx context.Context, arg CreateUserParams) error {
+	_, err := q.db.ExecContext(ctx, createUser,
+		arg.ID,
+		arg.Name,
+		arg.Email,
+		arg.Password,
+	)
+	return err
 }
 
-const getUserByID = `-- name: GetUserByID :one
-SELECT id, name, email, creation_date FROM users WHERE id = ?
+const deleteUser = `-- name: DeleteUser :exec
+DELETE FROM users WHERE id = ?
 `
 
-type GetUserByIDRow struct {
-	ID           string
-	Name         string
-	Email        string
-	CreationDate scalar.Date
+func (q *Queries) DeleteUser(ctx context.Context, id string) error {
+	_, err := q.db.ExecContext(ctx, deleteUser, id)
+	return err
 }
 
-func (q *Queries) GetUserByID(ctx context.Context, id string) (GetUserByIDRow, error) {
-	row := q.db.QueryRowContext(ctx, getUserByID, id)
-	var i GetUserByIDRow
+const getCreatedUser = `-- name: GetCreatedUser :one
+SELECT id, name, email, password, avatar, created_at FROM users WHERE id = LAST_INSERT_ID()
+`
+
+func (q *Queries) GetCreatedUser(ctx context.Context) (User, error) {
+	row := q.db.QueryRowContext(ctx, getCreatedUser)
+	var i User
 	err := row.Scan(
 		&i.ID,
 		&i.Name,
 		&i.Email,
-		&i.CreationDate,
+		&i.Password,
+		&i.Avatar,
+		&i.CreatedAt,
+	)
+	return i, err
+}
+
+const getUser = `-- name: GetUser :one
+SELECT id, name, email, password, avatar, created_at FROM users
+WHERE id = ? LIMIT 1
+`
+
+func (q *Queries) GetUser(ctx context.Context, id string) (User, error) {
+	row := q.db.QueryRowContext(ctx, getUser, id)
+	var i User
+	err := row.Scan(
+		&i.ID,
+		&i.Name,
+		&i.Email,
+		&i.Password,
+		&i.Avatar,
+		&i.CreatedAt,
+	)
+	return i, err
+}
+
+const getUserByEmail = `-- name: GetUserByEmail :one
+SELECT id, name, email, password, avatar, created_at FROM users
+WHERE email = ? LIMIT 1
+`
+
+func (q *Queries) GetUserByEmail(ctx context.Context, email string) (User, error) {
+	row := q.db.QueryRowContext(ctx, getUserByEmail, email)
+	var i User
+	err := row.Scan(
+		&i.ID,
+		&i.Name,
+		&i.Email,
+		&i.Password,
+		&i.Avatar,
+		&i.CreatedAt,
+	)
+	return i, err
+}
+
+const getUserForComment = `-- name: GetUserForComment :one
+SELECT u.id, u.name, u.email, u.password, u.avatar, u.created_at FROM users u
+JOIN comments c ON u.id = c.author_id
+WHERE c.id = ?
+`
+
+func (q *Queries) GetUserForComment(ctx context.Context, id string) (User, error) {
+	row := q.db.QueryRowContext(ctx, getUserForComment, id)
+	var i User
+	err := row.Scan(
+		&i.ID,
+		&i.Name,
+		&i.Email,
+		&i.Password,
+		&i.Avatar,
+		&i.CreatedAt,
 	)
 	return i, err
 }
 
 const listUsers = `-- name: ListUsers :many
-
-SELECT id, name, email, creation_date FROM users ORDER BY id
+SELECT id, name, email, password, avatar, created_at FROM users
+ORDER BY name
 `
 
-type ListUsersRow struct {
-	ID           string
-	Name         string
-	Email        string
-	CreationDate scalar.Date
-}
-
-// queries/sql/users.sql
-func (q *Queries) ListUsers(ctx context.Context) ([]ListUsersRow, error) {
+func (q *Queries) ListUsers(ctx context.Context) ([]User, error) {
 	rows, err := q.db.QueryContext(ctx, listUsers)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
-	var items []ListUsersRow
+	var items []User
 	for rows.Next() {
-		var i ListUsersRow
+		var i User
 		if err := rows.Scan(
 			&i.ID,
 			&i.Name,
 			&i.Email,
-			&i.CreationDate,
+			&i.Password,
+			&i.Avatar,
+			&i.CreatedAt,
 		); err != nil {
 			return nil, err
 		}
@@ -92,31 +152,33 @@ func (q *Queries) ListUsers(ctx context.Context) ([]ListUsersRow, error) {
 	return items, nil
 }
 
-const searchUsersByName = `-- name: SearchUsersByName :many
-SELECT id, name, email, creation_date FROM users WHERE LOWER(name) LIKE LOWER(?)
+const searchUsers = `-- name: SearchUsers :many
+SELECT id, name, email, password, avatar, created_at FROM users
+WHERE name LIKE ? OR email LIKE ?
+ORDER BY name
 `
 
-type SearchUsersByNameRow struct {
-	ID           string
-	Name         string
-	Email        string
-	CreationDate scalar.Date
+type SearchUsersParams struct {
+	Name  string
+	Email string
 }
 
-func (q *Queries) SearchUsersByName(ctx context.Context, lower string) ([]SearchUsersByNameRow, error) {
-	rows, err := q.db.QueryContext(ctx, searchUsersByName, lower)
+func (q *Queries) SearchUsers(ctx context.Context, arg SearchUsersParams) ([]User, error) {
+	rows, err := q.db.QueryContext(ctx, searchUsers, arg.Name, arg.Email)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
-	var items []SearchUsersByNameRow
+	var items []User
 	for rows.Next() {
-		var i SearchUsersByNameRow
+		var i User
 		if err := rows.Scan(
 			&i.ID,
 			&i.Name,
 			&i.Email,
-			&i.CreationDate,
+			&i.Password,
+			&i.Avatar,
+			&i.CreatedAt,
 		); err != nil {
 			return nil, err
 		}
@@ -129,4 +191,23 @@ func (q *Queries) SearchUsersByName(ctx context.Context, lower string) ([]Search
 		return nil, err
 	}
 	return items, nil
+}
+
+const updateUser = `-- name: UpdateUser :exec
+UPDATE users
+SET 
+    name = COALESCE(?, name),
+    email = COALESCE(?, email)
+WHERE id = ?
+`
+
+type UpdateUserParams struct {
+	Name  sql.NullString
+	Email sql.NullString
+	ID    string
+}
+
+func (q *Queries) UpdateUser(ctx context.Context, arg UpdateUserParams) error {
+	_, err := q.db.ExecContext(ctx, updateUser, arg.Name, arg.Email, arg.ID)
+	return err
 }

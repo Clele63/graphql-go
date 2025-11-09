@@ -1,4 +1,0 @@
-type Token @goModel(model: "workbench/graphql-app/graph/model.Token"){
-  token: String!
-  expired_at: Date!
-}
