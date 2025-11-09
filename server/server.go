@@ -4,7 +4,6 @@ import (
 	"log"
 	"net/http"
 	"os"
-	"path/filepath"
 	"time"
 
 	"workbench/graphql-app/graph/connect"
@@ -88,16 +87,8 @@ func main() {
 	router.Handle("/query", srv)
 
 	if appEnv == "prod" {
-		fs := http.FileServer(http.Dir(filepath.Join("client", "build")))
-		router.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
-			path := filepath.Join("client", "build", r.URL.Path)
-			_, err := os.Stat(path)
-			if os.IsNotExist(err) {
-				http.ServeFile(w, r, filepath.Join("client", "build", "index.html"))
-				return
-			}
-			fs.ServeHTTP(w, r)
-		})
+		fs := http.FileServer(http.Dir("./client"))
+		router.Handle("/*", http.StripPrefix("/", fs))
 	}
 
 	log.Printf("connect to http://localhost:%s/playground for GraphQL playground", port)
